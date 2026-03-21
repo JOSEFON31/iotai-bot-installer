@@ -6,6 +6,9 @@ on:
       - 'v*'
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     strategy:
@@ -13,13 +16,10 @@ jobs:
         include:
           - os: windows-latest
             target: --win
-            artifact: dist/*.exe
           - os: macos-latest
             target: --mac
-            artifact: dist/*.dmg
           - os: ubuntu-latest
             target: --linux
-            artifact: dist/*.AppImage
 
     runs-on: ${{ matrix.os }}
 
@@ -40,5 +40,51 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: installer-${{ matrix.os }}
-          path: dist/*
+          path: |
+            dist/*.exe
+            dist/*.dmg
+            dist/*.AppImage
+            dist/*.yml
           retention-days: 30
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: List artifacts
+        run: find artifacts -type f | head -20
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: IOTAI Bot Installer ${{ github.ref_name }}
+          body: |
+            ## IOTAI Bot Installer ${{ github.ref_name }}
+
+            Cross-platform GUI installer for IOTAI Bot.
+
+            ### Downloads
+            | Platform | File |
+            |----------|------|
+            | Windows | `.exe` installer |
+            | macOS | `.dmg` disk image |
+            | Linux | `.AppImage` portable |
+
+            ### How to install
+            1. Download the installer for your platform
+            2. Run the installer
+            3. Follow the 5-step wizard to configure your IOTAI Bot
+            4. Start earning IOTAI!
+          draft: false
+          prerelease: false
+          files: |
+            artifacts/**/*.exe
+            artifacts/**/*.dmg
+            artifacts/**/*.AppImage
