@@ -12,7 +12,7 @@ win:
   target:
     - target: nsis
       arch: [x64]
-  signDllAndExe: false
+  forceCodeSigning: false
 
 nsis:
   oneClick: false
