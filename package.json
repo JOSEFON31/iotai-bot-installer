@@ -10,7 +10,10 @@
     "build:mac": "electron-builder build --mac",
     "build:linux": "electron-builder build --linux"
   },
-  "author": "IOTAI",
+  "author": {
+    "name": "IOTAI",
+    "email": "fonseca@iotai.dev"
+  },
   "license": "MIT",
   "devDependencies": {
     "electron": "^33.0.0",

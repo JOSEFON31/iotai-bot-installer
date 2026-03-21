@@ -12,20 +12,19 @@ win:
   target:
     - target: nsis
       arch: [x64]
-  icon: build/icon.ico
+  signDllAndExe: false
 
 nsis:
   oneClick: false
   allowToChangeInstallationDirectory: false
-  installerHeaderIcon: build/icon.ico
   shortcutName: IOTAI Bot Installer
 
 mac:
   target:
     - target: dmg
       arch: [x64, arm64]
-  icon: build/icon.icns
   category: public.app-category.utilities
+  identity: null
 
 dmg:
   title: IOTAI Bot Installer
@@ -34,7 +33,5 @@ linux:
   target:
     - target: AppImage
       arch: [x64]
-    - target: deb
-      arch: [x64]
-  icon: build/icon.png
   category: Utility
+  maintainer: fonseca@iotai.dev

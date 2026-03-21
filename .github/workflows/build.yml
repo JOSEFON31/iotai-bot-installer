@@ -34,7 +34,7 @@ jobs:
         run: npm install
 
       - name: Build installer
-        run: npx electron-builder build ${{ matrix.target }}
+        run: npx electron-builder build ${{ matrix.target }} --publish never
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
