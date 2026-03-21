@@ -1,0 +1,22 @@
+{
+  "name": "iotai-bot-installer",
+  "version": "1.0.0",
+  "description": "Cross-platform GUI installer for IOTAI Bot",
+  "main": "src/main/main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder build",
+    "build:win": "electron-builder build --win",
+    "build:mac": "electron-builder build --mac",
+    "build:linux": "electron-builder build --linux"
+  },
+  "author": "IOTAI",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^25.0.0"
+  },
+  "dependencies": {
+    "sudo-prompt": "^9.2.1"
+  }
+}

@@ -1,0 +1,40 @@
+appId: com.iotai.bot.installer
+productName: IOTAI Bot Installer
+directories:
+  output: dist
+  buildResources: build
+files:
+  - src/**/*
+  - package.json
+asar: true
+
+win:
+  target:
+    - target: nsis
+      arch: [x64]
+  icon: build/icon.ico
+
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: false
+  installerHeaderIcon: build/icon.ico
+  shortcutName: IOTAI Bot Installer
+
+mac:
+  target:
+    - target: dmg
+      arch: [x64, arm64]
+  icon: build/icon.icns
+  category: public.app-category.utilities
+
+dmg:
+  title: IOTAI Bot Installer
+
+linux:
+  target:
+    - target: AppImage
+      arch: [x64]
+    - target: deb
+      arch: [x64]
+  icon: build/icon.png
+  category: Utility

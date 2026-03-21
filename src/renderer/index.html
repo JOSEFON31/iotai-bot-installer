@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IOTAI Bot Installer</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app">
+
+  <div class="titlebar">IOTAI Bot Installer</div>
+
+  <!-- ═══ SCREEN 1: WELCOME ═══ -->
+  <div id="screen-welcome" class="screen active">
+    <div class="welcome-center">
+      <div class="logo-big">IOTAI</div>
+      <div class="logo-sub">Bot Installer</div>
+      <div class="features-row">
+        <div class="feature-chip"><strong>AI Agents</strong> &mdash; GPT-4, Claude, Gemini</div>
+        <div class="feature-chip"><strong>Swarm AI</strong> &mdash; Collective Intelligence</div>
+        <div class="feature-chip"><strong>Multi-Channel</strong> &mdash; Telegram, Discord, WhatsApp</div>
+      </div>
+      <p class="sub">Install and configure your IOTAI Bot in minutes.<br>Works on Windows, macOS, and Linux.</p>
+      <button class="btn btn-primary" onclick="goTo('screen-prereq')">
+        Install IOTAI Bot &rarr;
+      </button>
+    </div>
+  </div>
+
+  <!-- ═══ SCREEN 2: PREREQUISITES ═══ -->
+  <div id="screen-prereq" class="screen">
+    <h1><span>Prerequisites</span></h1>
+    <p class="sub">Checking your system for required tools...</p>
+
+    <div class="prereq-list" id="prereq-list">
+      <div class="prereq-item" id="prereq-node">
+        <div class="prereq-icon loading"><span class="spinner"></span></div>
+        <div class="prereq-info">
+          <div class="prereq-name">Node.js &ge;22.16</div>
+          <div class="prereq-detail" id="prereq-node-detail">Checking...</div>
+        </div>
+      </div>
+      <div class="prereq-item" id="prereq-pnpm">
+        <div class="prereq-icon loading"><span class="spinner"></span></div>
+        <div class="prereq-info">
+          <div class="prereq-name">pnpm</div>
+          <div class="prereq-detail" id="prereq-pnpm-detail">Checking...</div>
+        </div>
+      </div>
+      <div class="prereq-item" id="prereq-git">
+        <div class="prereq-icon loading"><span class="spinner"></span></div>
+        <div class="prereq-info">
+          <div class="prereq-name">Git</div>
+          <div class="prereq-detail" id="prereq-git-detail">Checking...</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="prereq-error" style="display:none;margin-top:12px;padding:14px;background:rgba(214,48,49,0.1);border:1px solid var(--red);border-radius:8px;font-size:13px;color:var(--red)"></div>
+
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="goTo('screen-welcome')">&larr; Back</button>
+      <button class="btn btn-primary" id="btn-prereq-next" disabled onclick="goTo('screen-config')">Next &rarr;</button>
+    </div>
+  </div>
+
+  <!-- ═══ SCREEN 3: CONFIGURATION ═══ -->
+  <div id="screen-config" class="screen">
+    <h1><span>Configuration</span></h1>
+    <p class="sub">Set up your IOTAI Bot. You can change these settings later.</p>
+
+    <!-- IOTAI Network -->
+    <div class="config-section">
+      <h3>IOTAI Network</h3>
+      <div class="form-group">
+        <label>Node URL</label>
+        <input type="text" id="cfg-node-url" value="https://iotai.onrender.com" placeholder="https://iotai.onrender.com">
+      </div>
+      <div class="form-group">
+        <label>Seed Phrase (12 words)</label>
+        <div class="input-with-btn">
+          <input type="text" id="cfg-seed" placeholder="word1 word2 word3 ... word12">
+          <button class="btn btn-secondary btn-small" onclick="generateSeed()">Generate</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Install Path</label>
+        <div class="input-with-btn">
+          <input type="text" id="cfg-install-path" readonly>
+          <button class="btn btn-secondary btn-small" onclick="selectInstallPath()">Browse</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI Provider -->
+    <div class="config-section">
+      <h3>AI Provider</h3>
+      <div class="radio-group" id="ai-provider-group">
+        <div class="radio-option selected" data-provider="openai" onclick="selectProvider(this)">
+          <div style="font-size:18px;margin-bottom:4px">OpenAI</div>
+          <div style="font-size:11px;color:var(--muted)">GPT-4, GPT-4o</div>
+        </div>
+        <div class="radio-option" data-provider="anthropic" onclick="selectProvider(this)">
+          <div style="font-size:18px;margin-bottom:4px">Anthropic</div>
+          <div style="font-size:11px;color:var(--muted)">Claude Opus, Sonnet</div>
+        </div>
+        <div class="radio-option" data-provider="google" onclick="selectProvider(this)">
+          <div style="font-size:18px;margin-bottom:4px">Google</div>
+          <div style="font-size:11px;color:var(--muted)">Gemini Pro, Flash</div>
+        </div>
+      </div>
+      <div class="form-group" style="margin-top:12px">
+        <label id="api-key-label">OpenAI API Key</label>
+        <input type="password" id="cfg-api-key" placeholder="sk-...">
+      </div>
+    </div>
+
+    <!-- Channels -->
+    <div class="config-section">
+      <h3>Channels (optional)</h3>
+      <div class="toggle-row">
+        <span class="toggle-name">Telegram</span>
+        <div class="toggle-switch" data-channel="telegram" onclick="toggleChannel(this)"></div>
+      </div>
+      <div class="channel-config" id="channel-telegram">
+        <div class="form-group">
+          <label>Telegram Bot Token</label>
+          <input type="password" id="cfg-telegram-token" placeholder="123456:ABCdef...">
+        </div>
+      </div>
+
+      <div class="toggle-row">
+        <span class="toggle-name">Discord</span>
+        <div class="toggle-switch" data-channel="discord" onclick="toggleChannel(this)"></div>
+      </div>
+      <div class="channel-config" id="channel-discord">
+        <div class="form-group">
+          <label>Discord Bot Token</label>
+          <input type="password" id="cfg-discord-token" placeholder="MTIx...">
+        </div>
+      </div>
+
+      <div class="toggle-row">
+        <span class="toggle-name">WhatsApp</span>
+        <div class="toggle-switch" data-channel="whatsapp" onclick="toggleChannel(this)"></div>
+      </div>
+      <div class="channel-config" id="channel-whatsapp">
+        <div class="form-group">
+          <label style="color:var(--muted);font-size:12px">WhatsApp will be configured during first launch via QR code pairing.</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="goTo('screen-prereq')">&larr; Back</button>
+      <button class="btn btn-primary" onclick="startInstall()">Install &rarr;</button>
+    </div>
+  </div>
+
+  <!-- ═══ SCREEN 4: PROGRESS ═══ -->
+  <div id="screen-progress" class="screen">
+    <h1><span>Installing...</span></h1>
+    <p class="sub">This may take a few minutes. Please don't close the window.</p>
+
+    <div class="progress-steps" id="progress-steps">
+      <div class="progress-step" data-step="node">
+        <div class="step-icon pending">1</div>
+        <div class="step-name">Install Node.js</div>
+        <div class="step-detail" id="step-detail-node"></div>
+      </div>
+      <div class="progress-step" data-step="pnpm">
+        <div class="step-icon pending">2</div>
+        <div class="step-name">Install pnpm</div>
+        <div class="step-detail" id="step-detail-pnpm"></div>
+      </div>
+      <div class="progress-step" data-step="clone">
+        <div class="step-icon pending">3</div>
+        <div class="step-name">Clone iotai-bot repository</div>
+        <div class="step-detail" id="step-detail-clone"></div>
+      </div>
+      <div class="progress-step" data-step="deps">
+        <div class="step-icon pending">4</div>
+        <div class="step-name">Install dependencies</div>
+        <div class="step-detail" id="step-detail-deps"></div>
+      </div>
+      <div class="progress-step" data-step="build">
+        <div class="step-icon pending">5</div>
+        <div class="step-name">Build project</div>
+        <div class="step-detail" id="step-detail-build"></div>
+      </div>
+      <div class="progress-step" data-step="config">
+        <div class="step-icon pending">6</div>
+        <div class="step-name">Write configuration</div>
+        <div class="step-detail" id="step-detail-config"></div>
+      </div>
+      <div class="progress-step" data-step="daemon">
+        <div class="step-icon pending">7</div>
+        <div class="step-name">Set up service</div>
+        <div class="step-detail" id="step-detail-daemon"></div>
+      </div>
+    </div>
+
+    <div class="log-panel">
+      <div class="log-header" onclick="toggleLog()">
+        <span>Installation Log</span>
+        <span id="log-toggle-icon">&#9660;</span>
+      </div>
+      <div class="log-body" id="log-body"></div>
+    </div>
+  </div>
+
+  <!-- ═══ SCREEN 5: COMPLETE ═══ -->
+  <div id="screen-complete" class="screen">
+    <div class="complete-center">
+      <div class="success-icon">&#10004;</div>
+      <h1><span>Installation Complete!</span></h1>
+      <p class="sub">Your IOTAI Bot is ready to go.</p>
+
+      <div class="summary-box" id="summary-box">
+        <div class="summary-row">
+          <span class="label">Install Path</span>
+          <span class="value" id="summary-path"></span>
+        </div>
+        <div class="summary-row">
+          <span class="label">Node URL</span>
+          <span class="value" id="summary-node"></span>
+        </div>
+        <div class="summary-row">
+          <span class="label">AI Provider</span>
+          <span class="value" id="summary-provider"></span>
+        </div>
+        <div class="summary-row">
+          <span class="label">Channels</span>
+          <span class="value" id="summary-channels"></span>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="launchBot()">Start IOTAI Bot</button>
+        <button class="btn btn-secondary" onclick="openInstallFolder()">Open Folder</button>
+        <button class="btn btn-secondary" onclick="window.close()">Close</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
