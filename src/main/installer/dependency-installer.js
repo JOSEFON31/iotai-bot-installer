@@ -52,6 +52,28 @@ async function buildProject(installPath, onProgress) {
     }
   }
 
+  // Install runtime packages that the bundled dist imports but are not
+  // listed in the root package.json (they live in workspace extensions).
+  const runtimeDeps = [
+    'grammy',           // Telegram extension
+    'discord.js',       // Discord extension
+    '@slack/web-api',   // Slack extension
+  ];
+
+  onProgress('Installing runtime dependencies...');
+  try {
+    await runAsync(`npm install --save --legacy-peer-deps ${runtimeDeps.join(' ')}`, {
+      timeout: 120000,
+      cwd: installPath,
+      onData: (d) => {
+        const line = d.trim();
+        if (line) onProgress(line);
+      }
+    });
+  } catch (e) {
+    onProgress(`Warning: some runtime deps failed (${e.message}) — continuing`);
+  }
+
   onProgress('Build completed successfully');
 }
 
