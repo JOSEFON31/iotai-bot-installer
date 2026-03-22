@@ -22,10 +22,10 @@ async function checkPrerequisites() {
     }
   }
 
-  // Check pnpm
-  const pnpmVersion = run('pnpm --version');
-  if (pnpmVersion) {
-    result.pnpm = { found: true, version: `v${pnpmVersion}` };
+  // npm comes bundled with Node.js — always available if Node is installed
+  if (result.node.found) {
+    const npmVersion = run('npm --version');
+    result.pnpm = { found: true, version: `npm v${npmVersion || 'bundled'}` };
   }
 
   // Check Git

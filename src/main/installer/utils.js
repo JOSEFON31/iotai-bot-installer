@@ -36,6 +36,7 @@ function runAsync(cmd, opts = {}) {
       encoding: 'utf-8',
       timeout: opts.timeout || 600000,
       maxBuffer: 50 * 1024 * 1024,
+      shell: process.platform === 'win32' ? 'cmd.exe' : '/bin/sh',
       ...opts
     }, (err, stdout, stderr) => {
       if (err) reject(err);
