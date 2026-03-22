@@ -236,10 +236,17 @@
         </div>
       </div>
 
+      <div id="complete-warning" style="display:none;background:#e17055;color:white;padding:12px 16px;border-radius:8px;font-size:13px;margin-bottom:16px;text-align:left"></div>
+
       <div class="btn-row">
         <button class="btn btn-primary" onclick="launchBot()">Start IOTAI Bot</button>
         <button class="btn btn-secondary" onclick="openInstallFolder()">Open Folder</button>
         <button class="btn btn-secondary" onclick="window.close()">Close</button>
+      </div>
+
+      <div style="margin-top:16px;padding:16px;background:rgba(255,255,255,0.05);border-radius:8px;text-align:left">
+        <p style="font-size:13px;color:#aaa;margin-bottom:8px"><strong style="color:white">Manual start:</strong> If the button doesn't work, open a terminal and run:</p>
+        <code style="display:block;background:#0a0a1a;padding:10px;border-radius:6px;font-size:12px;color:#00b894;word-break:break-all" id="manual-cmd"></code>
       </div>
     </div>
   </div>

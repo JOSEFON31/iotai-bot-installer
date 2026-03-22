@@ -159,9 +159,14 @@ async function startInstall() {
     const result = await window.electronAPI.runInstall(config);
     if (result.success) {
       showComplete();
+    } else {
+      // Installation had an error but may be partially usable
+      appendLog(`Step "${result.failedStep}" failed: ${result.error}`, 'err');
+      showCompleteWithWarning(result.failedStep, result.error);
     }
   } catch (err) {
     appendLog('Installation failed: ' + err.message, 'err');
+    showCompleteWithWarning('unknown', err.message);
   }
 }
 
@@ -213,7 +218,33 @@ function showComplete() {
   document.getElementById('summary-provider').textContent = config.provider.charAt(0).toUpperCase() + config.provider.slice(1);
   const channels = Object.keys(config.channels);
   document.getElementById('summary-channels').textContent = channels.length > 0 ? channels.join(', ') : 'None';
+  const warn = document.getElementById('complete-warning');
+  if (warn) warn.style.display = 'none';
+  updateManualCmd();
   goTo('screen-complete');
+}
+
+function showCompleteWithWarning(failedStep, error) {
+  document.getElementById('summary-path').textContent = config.installPath;
+  document.getElementById('summary-node').textContent = config.nodeUrl;
+  document.getElementById('summary-provider').textContent = config.provider.charAt(0).toUpperCase() + config.provider.slice(1);
+  const channels = Object.keys(config.channels);
+  document.getElementById('summary-channels').textContent = channels.length > 0 ? channels.join(', ') : 'None';
+  const warn = document.getElementById('complete-warning');
+  if (warn) {
+    warn.style.display = 'block';
+    warn.textContent = `Warning: step "${failedStep}" had an error (${error}). The bot may still work — try starting it.`;
+  }
+  updateManualCmd();
+  goTo('screen-complete');
+}
+
+function updateManualCmd() {
+  const el = document.getElementById('manual-cmd');
+  if (el) {
+    const p = config.installPath.replace(/\\/g, '\\');
+    el.textContent = `cd "${p}" && node openclaw.mjs agent`;
+  }
 }
 
 async function launchBot() {
