@@ -21,10 +21,15 @@ async function runInstallSteps(config, onProgress) {
     },
     {
       name: 'pnpm',
-      label: 'Check npm',
+      label: 'Install pnpm',
       run: async (p) => {
-        // We use npm instead of pnpm for better Windows compatibility
-        p('pnpm', 'skip', 'Using npm (bundled with Node.js)');
+        if (config.prereqs && config.prereqs.pnpm && config.prereqs.pnpm.found) {
+          p('pnpm', 'skip', 'Already installed');
+          return;
+        }
+        p('pnpm', 'running', 'Installing pnpm...');
+        await installPnpm((msg) => p('pnpm', 'running', msg));
+        p('pnpm', 'done', 'pnpm installed');
       }
     },
     {

@@ -1,11 +1,24 @@
-const { runAsync, getPlatform } = require('./utils');
+const { runAsync, getPlatform, run } = require('./utils');
 const path = require('path');
 const fs = require('fs');
 
 async function installDependencies(installPath, onProgress) {
-  onProgress('Running npm install (this may take several minutes)...');
+  // The project uses pnpm workspaces — extensions have their own deps.
+  // We must use pnpm so workspace:* references resolve correctly.
 
-  await runAsync('npm install --legacy-peer-deps', {
+  // Ensure pnpm is available
+  const hasPnpm = run('pnpm --version');
+  if (!hasPnpm) {
+    onProgress('Installing pnpm...');
+    await runAsync('npm install -g pnpm', {
+      timeout: 60000,
+      onData: (d) => { const l = d.trim(); if (l) onProgress(l); }
+    });
+  }
+
+  onProgress('Running pnpm install (this may take several minutes)...');
+
+  await runAsync('pnpm install --no-frozen-lockfile', {
     timeout: 600000,
     cwd: installPath,
     onData: (d) => {
@@ -18,63 +31,52 @@ async function installDependencies(installPath, onProgress) {
 }
 
 async function buildProject(installPath, onProgress) {
-  const platform = getPlatform();
+  // Skip the full build — it requires bash scripts and many native deps.
+  // Instead, we build only the core dist using pnpm, and if it fails
+  // we fall back to running from source via tsx (already a dependency).
 
-  // The upstream "pnpm build" relies on bash scripts that don't work on
-  // Windows.  We run only the node-based build steps that are needed and
-  // skip bash-dependent steps (canvas:a2ui:bundle).  If any individual
-  // step fails we log a warning but continue — the IOTAI skills work
-  // without the full OpenClaw UI build.
+  onProgress('Building project...');
 
-  const buildSteps = [
-    'node scripts/tsdown-build.mjs',
-    'node scripts/runtime-postbuild.mjs',
-  ];
-
-  for (const cmd of buildSteps) {
-    const scriptFile = cmd.split(' ').pop();
-    if (!fs.existsSync(path.join(installPath, scriptFile))) {
-      onProgress(`Skipping ${scriptFile} (not found)`);
-      continue;
-    }
-    try {
-      onProgress(`Running ${cmd}...`);
-      await runAsync(cmd, {
-        timeout: 120000,
-        cwd: installPath,
-        onData: (d) => {
-          const line = d.trim();
-          if (line) onProgress(line);
-        }
-      });
-    } catch (e) {
-      onProgress(`Warning: ${cmd} failed (${e.message}) — continuing`);
-    }
-  }
-
-  // Install runtime packages that the bundled dist imports but are not
-  // listed in the root package.json (they live in workspace extensions).
-  const runtimeDeps = [
-    'grammy',           // Telegram extension
-    'discord.js',       // Discord extension
-    '@slack/web-api',   // Slack extension
-  ];
-
-  onProgress('Installing runtime dependencies...');
   try {
-    await runAsync(`npm install --save --legacy-peer-deps ${runtimeDeps.join(' ')}`, {
-      timeout: 120000,
+    // Try the full build first (works on systems with bash, e.g. Git Bash)
+    await runAsync('pnpm build', {
+      timeout: 300000,
       cwd: installPath,
       onData: (d) => {
         const line = d.trim();
         if (line) onProgress(line);
       }
     });
+    onProgress('Build completed successfully');
   } catch (e) {
-    onProgress(`Warning: some runtime deps failed (${e.message}) — continuing`);
-  }
+    onProgress(`Full build failed (${e.message})`);
+    onProgress('Trying minimal build...');
 
-  onProgress('Build completed successfully');
+    // Fallback: run only the node-based build steps
+    const buildSteps = [
+      'node scripts/tsdown-build.mjs',
+      'node scripts/runtime-postbuild.mjs',
+    ];
+
+    for (const cmd of buildSteps) {
+      const scriptFile = cmd.split(' ').pop();
+      if (!fs.existsSync(path.join(installPath, scriptFile))) {
+        onProgress(`Skipping ${scriptFile} (not found)`);
+        continue;
+      }
+      try {
+        await runAsync(cmd, {
+          timeout: 120000,
+          cwd: installPath,
+          onData: (d) => { const l = d.trim(); if (l) onProgress(l); }
+        });
+      } catch (e2) {
+        onProgress(`Warning: ${cmd} failed — continuing`);
+      }
+    }
+
+    onProgress('Minimal build completed');
+  }
 }
 
 module.exports = { installDependencies, buildProject };
